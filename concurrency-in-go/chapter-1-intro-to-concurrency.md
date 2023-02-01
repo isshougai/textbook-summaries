@@ -2,7 +2,7 @@
 
 ## Moore's Law, Web Scale, and the Mess We're In
 - Companies began to investigate alternative ways to increase computing power in anticipation of the slowdown in the rate of Moore's law prediction
-- Soon faced the l imits of Amdahl's law: gains are bounded by how much of the program must be written in a sequential manner
+- Soon faced the limits of Amdahl's law: gains are bounded by how much of the program must be written in a sequential manner
 - [Spigot algorithms](https://mathworld.wolfram.com/SpigotAlgorithm.html) reduces a problem to *embarrassingly parallel*, which means to easily divide problems into parallel tasks
 
 ### *Embarrassingly parallel problems should scale horizontally*
@@ -22,7 +22,7 @@
 ----------
 
 
-## **Why is Concurrency Hard?**
+## Why is Concurrency Hard?
 
 ### ***Race Conditions***
 When two or more operations must execute in the correct order, but the program has not been written so that this order is guaranteed to be maintained. Occurs most of the time as a *data race*, where one concurrent operation attempts to read a variable, while at some undetermined time another concurrent operation is attempting to write to the same variable.
