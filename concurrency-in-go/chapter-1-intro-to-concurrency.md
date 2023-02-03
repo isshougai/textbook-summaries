@@ -65,7 +65,7 @@ Developers themselves pose the biggest challenge of developing concurrent code. 
   2. How is the problem space mapped onto concurrency primitives?
   3. Who is responsible for the synchronization?
 
-```
+```go
 // CalculatePi calculates digits of Pi between the begin and end
 // place.
 //
