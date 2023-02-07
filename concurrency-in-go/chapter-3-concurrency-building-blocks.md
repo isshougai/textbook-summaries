@@ -452,4 +452,94 @@ for integer := range intStream {
 
 ![channels](https://i.imgur.com/rI9rEi9.png)
 
+To prevent the undesired results above, the following are recommended
+1. Assign channel *ownership*
+   - a goroutine that instantiates, writes, and closes a channel
+   - unidirectional channel declarations helps to distinguish between goroutines that own channels and those that only utilize
+     - channel owners have write-access view (chan or chan<-)
+     - channel utilizers only have a read-only view (<-chan)
+2. Channel owners should
+   - Instantiate the channel
+   - Perform writes, or pass ownership to another goroutine
+   - Close the channel
+   - Encapsulate the previous 3 things and expose them via a reader channel
+3. Channel consumers should
+   - Know when a channel is closed
+   - Responsibly handle blocking for any reason
+
+```go
+chanOwner := func() <-chan int {
+    resultStream := make(chan int, 5)
+    go func() {
+        defer close(resultStream)
+        for i := 0; i <= 5; i++ {
+            resultStream <- i
+        }
+    }()
+    return resultStream
+}
+
+resultStream := chanOwner()
+for result := range resultStream {
+    fmt.Printf("Received: %d\n", result)
+}
+fmt.Println("Done receiving!")
+```
+----------
+
+## The select Statement
+select statement binds channels together
+```go
+var c1, c2 <-chan interface{}
+var c3 chan<- interface{}
+select {
+case <- c1:
+    // Do something
+case <- c2:
+    // Do something
+case c3<- struct{}{}:
+    // Do something
+}
+```
+select block encompasses a series of case statements that guiard a series of statements
+- case statements in select block aren't tested sequentially
+  - all channel reads and writes are considered simultaneously to see if any of them are ready
+- execution won't automatically fall through if none of the criteria are met
+  - if none are ready, entire select statement blocks.
+- when multiple channels are being read simultaneously in a select statement, each has a pseudorandom equal chance
+- when there are never any channels that become ready, can consider time out.
+
+```go
+var c <-chan int
+select {
+case <-c:
+case <-time.After(1 * time.Second):
+    fmt.Println("Timed out.")
+}
+```
+- when no channels become ready and something needs to be done in the meantime, can use default clause
+```go
+done := make(chan interface{})
+go func() {
+    time.Sleep(5*time.Second)
+    close(done)
+}()
+
+workCounter := 0
+loop:
+for {
+    select {
+    case <-done:
+        break loop
+    default:
+    }
+
+    // Simulate work
+    workCounter++
+    time.Sleep(1*time.Second)
+}
+
+fmt.Printf("Achieved %v cycles of work before signalled to stop.\n", workCounter)
+//Achieved 5 cycles of work before signalled to stop.
+```
 
